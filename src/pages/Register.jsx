@@ -1,49 +1,31 @@
 import { useState } from "react";
+import { useFormik } from "formik";
 
 import { Link } from "react-router";
 
+import registerSchema from "../validations/register";
+
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    terms: false,
+
+  const form = useFormik({
+    initialValues: {
+      fullname: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      rememeberMe: false,
+    },
+    onSubmit: (values, { setSubmitting }) => {
+      console.log("Register form data: ", values);
+
+      setTimeout(() => {
+        setSubmitting(false);
+      }, 2000);
+    },
+
+    validationSchema: registerSchema,
   });
-
-  const [error, setError] = useState("");
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    if (!formData.terms) {
-      setError("Please accept the terms and conditions.");
-      return;
-    }
-
-    setError("");
-    console.log(formData);
-  };
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#F9F5F6] px-4 py-10">
@@ -82,7 +64,7 @@ const Register = () => {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={form.handleSubmit} className="space-y-4">
           {/* Full Name */}
           <div>
             <label className="mb-2 block text-sm font-medium text-[#765666]">
@@ -91,13 +73,18 @@ const Register = () => {
 
             <input
               type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
+              name="fullname"
+              value={form.values.fullname}
+              onChange={form.handleChange}
+              onBlur={form.handleBlur}
               placeholder="John Doe"
-              required
               className="w-full rounded-2xl border border-[#F2BED1]/60 bg-[#F9F5F6]/80 px-4 py-3.5 text-sm text-[#553747] outline-none transition-all duration-300 placeholder:text-[#C7AAB6] focus:border-[#E99CB9] focus:bg-white focus:ring-4 focus:ring-[#FDCEDF]/30"
             />
+            {form.errors.fullname &&
+              form.touched.fullname &&
+              form.errors.fullname && (
+                <span className="text-red-500">* {form.errors.fullname}</span>
+              )}
           </div>
 
           {/* Email */}
@@ -109,12 +96,15 @@ const Register = () => {
             <input
               type="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={form.values.email}
+              onChange={form.handleChange}
+              onBlur={form.handleBlur}
               placeholder="example@email.com"
-              required
               className="w-full rounded-2xl border border-[#F2BED1]/60 bg-[#F9F5F6]/80 px-4 py-3.5 text-sm text-[#553747] outline-none transition-all duration-300 placeholder:text-[#C7AAB6] focus:border-[#E99CB9] focus:bg-white focus:ring-4 focus:ring-[#FDCEDF]/30"
             />
+            {form.errors.email && form.touched.email && form.errors.email && (
+              <span className="text-red-500">* {form.errors.email}</span>
+            )}
           </div>
 
           {/* Password */}
@@ -127,12 +117,17 @@ const Register = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
-                value={formData.password}
-                onChange={handleChange}
+                value={form.values.password}
+                onChange={form.handleChange}
+                onBlur={form.handleBlur}
                 placeholder="Create a password"
-                required
                 className="w-full rounded-2xl border border-[#F2BED1]/60 bg-[#F9F5F6]/80 px-4 py-3.5 pr-16 text-sm text-[#553747] outline-none transition-all duration-300 placeholder:text-[#C7AAB6] focus:border-[#E99CB9] focus:bg-white focus:ring-4 focus:ring-[#FDCEDF]/30"
               />
+              {form.errors.password &&
+                form.touched.password &&
+                form.errors.password && (
+                  <span className="text-red-500">* {form.errors.password}</span>
+                )}
 
               <button
                 type="button"
@@ -153,12 +148,19 @@ const Register = () => {
             <input
               type="password"
               name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
+              value={form.values.confirmPassword}
+              onChange={form.handleChange}
+              onBlur={form.handleBlur}
               placeholder="Repeat your password"
-              required
               className="w-full rounded-2xl border border-[#F2BED1]/60 bg-[#F9F5F6]/80 px-4 py-3.5 text-sm text-[#553747] outline-none transition-all duration-300 placeholder:text-[#C7AAB6] focus:border-[#E99CB9] focus:bg-white focus:ring-4 focus:ring-[#FDCEDF]/30"
             />
+            {form.errors.confirmPassword &&
+              form.touched.confirmPassword &&
+              form.errors.confirmPassword && (
+                <span className="text-red-500">
+                  * {form.errors.confirmPassword}
+                </span>
+              )}
           </div>
 
           {/* Terms */}
@@ -166,30 +168,44 @@ const Register = () => {
             <input
               type="checkbox"
               name="terms"
-              checked={formData.terms}
-              onChange={handleChange}
+              checked={form.values.rememeberMe}
+              onChange={form.handleSubmit}
               className="mt-1 h-4 w-4 accent-[#E99CB9]"
             />
 
             <span>I agree to the Terms of Service and Privacy Policy.</span>
           </label>
 
-          {/* Error */}
-          {error && (
-            <p className="rounded-xl bg-red-50 px-4 py-3 text-xs text-red-500">
-              {error}
-            </p>
-          )}
-
           {/* Submit */}
           <button
             type="submit"
-            className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-[#EAA8C0] to-[#E99CB9] py-4 font-semibold text-white shadow-lg shadow-[#F2BED1]/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#F2BED1]/70 active:scale-[0.98] cursor-pointer"
+            disabled={form.isSubmitting || Object.keys(form.errors).length > 0}
+            className={`group flex w-full items-center justify-center gap-2 rounded-2xl py-4 font-semibold transition-all duration-300 ${
+              form.isSubmitting
+                ? "cursor-not-allowed bg-[#F8E8EE] text-[#C99AAD] shadow-none"
+                : Object.keys(form.errors).length > 0
+                  ? "cursor-not-allowed border border-red-200 bg-red-50 text-red-400 shadow-none"
+                  : "cursor-pointer bg-linear-to-r from-[#EAA8C0] to-[#E99CB9] text-white shadow-lg shadow-[#F2BED1]/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#F2BED1]/70 active:scale-[0.98]"
+            }`}
           >
-            Create Account
-            <span className="transition-transform duration-300 group-hover:translate-x-1 ">
-              →
-            </span>
+            {form.isSubmitting ? (
+              <>
+                <span className="size-5 animate-spin rounded-full border-2 border-[#C99AAD]/30 border-t-[#C99AAD]" />
+                Loading...
+              </>
+            ) : Object.keys(form.errors).length > 0 ? (
+              <>
+                Fix the errors first
+                <span>!</span>
+              </>
+            ) : (
+              <>
+                Sign Up
+                <span className="transition-transform duration-300 group-hover:translate-x-1">
+                  →
+                </span>
+              </>
+            )}
           </button>
         </form>
 
