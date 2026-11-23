@@ -1,28 +1,25 @@
 import { useState } from "react";
+import { useFormik } from "formik";
 
 import { Link } from "react-router";
 
+import loginSchema from "../validations/login";
+
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    remember: false,
+
+  const form = useFormik({
+    initialValues: { email: "", password: "" },
+    onSubmit: (values, { setSubmitting }) => {
+      console.log("Login form data: ", values);
+
+      setTimeout(() => {
+        setSubmitting(false);
+      }, 2000);
+    },
+
+    validationSchema: loginSchema,
   });
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
-  };
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#F9F5F6] px-4 py-10">
@@ -61,7 +58,7 @@ const Login = () => {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={form.handleSubmit} className="space-y-5">
           {/* Email */}
           <div>
             <label className="mb-2 block text-sm font-medium text-[#765666]">
@@ -76,12 +73,15 @@ const Login = () => {
               <input
                 type="email"
                 name="email"
-                value={formData.email}
-                onChange={handleChange}
+                value={form.values.email}
+                onChange={form.handleChange}
+                onBlur={form.handleBlur}
                 placeholder="example@email.com"
-                required
                 className="w-full rounded-2xl border border-[#F2BED1]/60 bg-[#F9F5F6]/80 py-3.5 pl-12 pr-4 text-sm text-[#553747] outline-none transition-all duration-300 placeholder:text-[#C7AAB6] focus:border-[#E99CB9] focus:bg-white focus:ring-4 focus:ring-[#FDCEDF]/30"
               />
+              {form.errors.email && form.touched.email && form.errors.email && (
+                <span className="text-red-500">* {form.errors.email}</span>
+              )}
             </div>
           </div>
 
@@ -99,12 +99,17 @@ const Login = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
-                value={formData.password}
-                onChange={handleChange}
+                value={form.values.password}
+                onChange={form.handleChange}
+                onBlur={form.handleBlur}
                 placeholder="Enter your password"
-                required
                 className="w-full rounded-2xl border border-[#F2BED1]/60 bg-[#F9F5F6]/80 py-3.5 pl-12 pr-12 text-sm text-[#553747] outline-none transition-all duration-300 placeholder:text-[#C7AAB6] focus:border-[#E99CB9] focus:bg-white focus:ring-4 focus:ring-[#FDCEDF]/30"
               />
+              {form.errors.password &&
+                form.touched.password &&
+                form.errors.password && (
+                  <span className="text-red-500">* {form.errors.password}</span>
+                )}
 
               <button
                 type="button"
@@ -122,8 +127,8 @@ const Login = () => {
               <input
                 type="checkbox"
                 name="remember"
-                checked={formData.remember}
-                onChange={handleChange}
+                // checked={formData.remember}
+                // onChange={handleChange}
                 className="h-4 w-4 accent-[#E99CB9]"
               />
               Remember me
@@ -140,12 +145,33 @@ const Login = () => {
           {/* Submit */}
           <button
             type="submit"
-            className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-[#EAA8C0] to-[#E99CB9] py-4 font-semibold text-white shadow-lg shadow-[#F2BED1]/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#F2BED1]/70 active:scale-[0.98] cursor-pointer"
+            disabled={form.isSubmitting || Object.keys(form.errors).length > 0}
+            className={`group flex w-full items-center justify-center gap-2 rounded-2xl py-4 font-semibold transition-all duration-300 ${
+              form.isSubmitting
+                ? "cursor-not-allowed bg-[#F8E8EE] text-[#C99AAD] shadow-none"
+                : Object.keys(form.errors).length > 0
+                  ? "cursor-not-allowed border border-red-200 bg-red-50 text-red-400 shadow-none"
+                  : "cursor-pointer bg-linear-to-r from-[#EAA8C0] to-[#E99CB9] text-white shadow-lg shadow-[#F2BED1]/50 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#F2BED1]/70 active:scale-[0.98]"
+            }`}
           >
-            Sign In
-            <span className="transition-transform duration-300 group-hover:translate-x-1">
-              →
-            </span>
+            {form.isSubmitting ? (
+              <>
+                <span className="size-5 animate-spin rounded-full border-2 border-[#C99AAD]/30 border-t-[#C99AAD]" />
+                Loading...
+              </>
+            ) : Object.keys(form.errors).length > 0 ? (
+              <>
+                Fix the errors first
+                <span>!</span>
+              </>
+            ) : (
+              <>
+                Sign In
+                <span className="transition-transform duration-300 group-hover:translate-x-1">
+                  →
+                </span>
+              </>
+            )}
           </button>
         </form>
 
