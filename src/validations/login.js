@@ -7,7 +7,7 @@ const loginSchema = Yup.object().shape({
     .max(30, "The maximum number of characters is 30.")
     .required(),
   password: Yup.string()
-    .min(8, "The minimum number of characters is 10.")
+    .min(8, "The minimum number of characters is 8.")
     .max(12, "The maximum number of characters is 12.")
     .required(),
 });
